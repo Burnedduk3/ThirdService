@@ -29,6 +29,9 @@ public class TaskService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     private boolean isParentTaskInDB(Integer parentTask){
         Optional<Integer> parentTaskIdOptional = Optional.ofNullable(parentTask);
         return parentTaskIdOptional.isPresent() && !taskRepository.existsById(parentTaskIdOptional.get());
@@ -54,10 +57,10 @@ public class TaskService {
     public Task createTask(Task task){
         List<Role> foundRoles = getDatabaseRoles(task.getMinRoles());
         String uri = secondServiceUri + "/exists/%s";
-        var restTemplate = new RestTemplate();
         uri = String.format(uri, task.getJoinerInCharge().toString());
         Optional<Boolean> joinerExistsOptional = Optional.ofNullable(restTemplate.getForObject(uri, Boolean.class));
         boolean joinerExists = joinerExistsOptional.orElse(false);
+
         if (!joinerExists){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The Joiner does not exist");
         }
@@ -114,6 +117,7 @@ public class TaskService {
         updatedTask.setEstimatedRequiredHours(actualEstimatedHours);
         updatedTask.setName(actualName);
         updatedTask.setMinRoles(foundRoles);
+        updatedTask.setCreatedOn(oldTask.getCreatedOn());
 
         return taskRepository.saveAndFlush(updatedTask);
     }

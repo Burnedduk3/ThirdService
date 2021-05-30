@@ -17,6 +17,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @MappedSuperclass
 public class AuditAttributesEntity implements Serializable {
-    @Column(name = "created_on", nullable = false)
+    @Column(name = "created_on" )
     private LocalDateTime createdOn;
 }
